@@ -90,8 +90,25 @@ def test_이메일이_있는_경우에는_이메일_발송(boocking_scheduler_wi
 
     assert testable_mail_sender.send_mail_count == 1
 
+class TestableBoockingScheduler(BookingScheduler):
+    def __init__(self, capacity_per_hour, date_time: str):
+        super().__init__(capacity_per_hour)
+        self._date_time = date_time
+
+    def get_now(self):
+        return datetime.strptime(self._date_time, "%Y/%m/%d %H:%M")
+
 def test_현재날짜가_일요일인_경우_예약불가_예외처리():
-    pass
+    boocking_scheduler = TestableBoockingScheduler(CAPACITY_PER_HOUR, "2025/08/03 09:05")
+    schedule = Schedule(ON_THE_HOUR, UNDER_CAPACITY, CUSTOMER_WITH_EMAIL)
+
+    with pytest.raises(ValueError):
+        boocking_scheduler.add_schedule(schedule)
 
 def test_현재날짜가_일요일이_아닌경우_예약가능():
-    pass
+    boocking_scheduler = TestableBoockingScheduler(CAPACITY_PER_HOUR, "2025/08/04 09:05")
+    schedule = Schedule(ON_THE_HOUR, UNDER_CAPACITY, CUSTOMER_WITH_EMAIL)
+
+    boocking_scheduler.add_schedule(schedule)
+
+    assert boocking_scheduler.has_schedule(schedule)
