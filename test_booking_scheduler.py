@@ -50,8 +50,17 @@ def test_시간대별_인원제한이_있다_같은_시간대가_다르면_Capac
     assert  boocking_scheduler.has_schedule(schedule)
     assert  boocking_scheduler.has_schedule(new_schedule)
 
-def test_예약완료시_SMS는_무조건_발송(boocking_scheduler):
+@pytest.fixture
+def boocking_scheduler_with_sms_mock(boocking_scheduler):
     testable_sms_sender = TestableSmsSender()
+    boocking_scheduler.set_sms_sender(testable_sms_sender)
+    schedule = Schedule(ON_THE_HOUR,UNDER_CAPACITY,CUSTOMER)
+
+    boocking_scheduler.add_schedule(schedule)
+    return boocking_scheduler, testable_sms_sender
+
+def test_예약완료시_SMS는_무조건_발송(boocking_scheduler_with_sms_mock):
+    boocking_scheduler, testable_sms_sender = boocking_scheduler_with_sms_mock
     boocking_scheduler.set_sms_sender(testable_sms_sender)
     schedule = Schedule(ON_THE_HOUR,UNDER_CAPACITY,CUSTOMER)
 
